@@ -429,9 +429,9 @@
   <div class="dashboard-container">
     <!-- Header -->
     <div class="header">
-      <h1>Dashboard</h1>
+      <h1>InfinitVCC Dashboard</h1>
       <div class="user-info">
-        <span>Welcome Back</span>
+        <span>Welcome, User</span>
         <div class="profile-icon" id="profile-icon">&#9776;</div>
         <div class="profile-dropdown" id="profile-dropdown">
           <a href="#">Edit Profile</a>
@@ -443,8 +443,9 @@
 
     <!-- Balance Section -->
     <div class="balance-section">
-      <h2>Balance: $0.00</h2>
-      <p>Your account and all your cards are inactive. Please add funds to your account to start using your virtual cards. Your account will be automatically activated after the deposit, and you will be able to use the funds through cards or withdraw via crypto wallet address.</p>
+      <h2>Balance: $192.62</h2>
+      <h2>Referral earning: $275.00</h2>
+     
       <button id="add-funds-btn">+ Add Fund</button>
       <button id="withdraw-funds-btn">Withdraw Funds</button>
     </div>
@@ -452,15 +453,15 @@
     <!-- Stats Section -->
     <div class="stats-section">
       <div class="stat">
-        <h3>$0.00</h3>
+        <h3>$64.51</h3>
         <p>Daily Spend</p>
       </div>
       <div class="stat">
-        <h3>$0.00</h3>
+        <h3>$650.17</h3>
         <p>Monthly Spend</p>
       </div>
       <div class="stat">
-        <h3>$0.00</h3>
+        <h3>$812.12</h3>
         <p>Yearly Spend</p>
       </div>
     </div>
@@ -470,43 +471,16 @@
       <h2>Your Cards</h2>
       <button class="create-card-btn" id="create-card-btn">Create Card</button>
       <div class="cards-display" id="cards-display">
-        <!-- Pre-made Visa Card -->
-        <div class="card visa">
-          <h3>Visa</h3>
-          <div class="card-number">**** **** **** 8952</div>
-          <div class="card-details">
-            <p>EXP 01/29</p>
-            <p>CVC ***</p>
-          </div>
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa Logo" class="card-logo">
-          <div class="card-actions">
-            <button class="edit-limit-btn">Edit Limit</button>
-            <button class="view-details-btn">View Details</button>
-            <button class="delete-btn">Delete</button>
-          </div>
-        </div>
-        <!-- Pre-made Mastercard -->
-        <div class="card mastercard">
-          <h3>MasterCard</h3>
-          <div class="card-number">**** **** **** 2658</div>
-          <div class="card-details">
-            <p>EXP 01/29</p>
-            <p>CVC ***</p>
-          </div>
-          <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard Logo" class="card-logo">
-          <div class="card-actions">
-            <button class="edit-limit-btn">Edit Limit</button>
-            <button class="view-details-btn">View Details</button>
-            <button class="delete-btn">Delete</button>
-          </div>
-        </div>
+        <!-- Cards will be dynamically added here -->
       </div>
     </div>
 
     <!-- Transactions Section -->
     <div class="transactions-section">
       <h2>Transactions</h2>
-      <p>No transactions yet.</p>
+      <div id="transactions-list">
+        <!-- Transactions will be dynamically added here -->
+      </div>
     </div>
 
     <!-- Footer -->
@@ -535,10 +509,15 @@
     <div class="modal-content">
       <h2>Add Funds</h2>
       <div class="note">
-        <strong>Minimum Deposit 5 USDT.</strong>
+        Please select your network and send money from an exchange or wallet. <strong>Minimum deposit is <span style="color: red; font-weight: bold;">10 USDT</span>.</strong>
       </div>
-      <div class="wallet-address" id="wallet-address">0x22B50EC5b5F138517B16Bf57F230B7b5dCbfEBB2</div>
-      <button id="copy-address-btn">Binance Smart Chain (BEP20)</button>
+      <label for="crypto-network">Select Network</label>
+      <select id="crypto-network">
+        <option value="bep20">BEP20</option>
+        <option value="polygon">Polygon</option>
+        <option value="avaxc">AVAXC Chain</option>
+      </select>
+      <div class="wallet-address" id="wallet-address"></div>
     </div>
   </div>
 
@@ -560,26 +539,6 @@
     </div>
   </div>
 
-  <!-- No Balance Popup -->
-  <div class="modal" id="no-balance-modal">
-    <div class="modal-content">
-      <h2>No Balance</h2>
-      <p>You have no balance. Please add funds in order use and create more cards.</p>
-      <button id="close-no-balance-modal">Close</button>
-    </div>
-  </div>
-
-  <!-- Edit Limit Popup -->
-  <div class="modal" id="edit-limit-modal">
-    <div class="modal-content">
-      <h2>Edit Spending Limit</h2>
-      <label for="new-limit">New Spending Limit</label>
-      <input type="number" id="new-limit" placeholder="Enter new limit">
-      <button id="save-limit-btn">Save</button>
-      <button id="cancel-limit-btn">Cancel</button>
-    </div>
-  </div>
-
   <script>
     // Function to generate a random card number
     function generateCardNumber(prefix) {
@@ -596,11 +555,7 @@
     }
 
     // Function to create a card element
-    function createCard(type, spendingLimit) {
-      const cardNumber = generateCardNumber(type === 'visa' ? '4' : '5');
-      const expiryDate = '01/29'; // Fixed expiry date
-      const cvv = generateCVV();
-
+    function createCard(type, cardNumber, expiryDate, cvv) {
       const card = document.createElement('div');
       card.classList.add('card', type);
       card.innerHTML = `
@@ -629,27 +584,22 @@
       const deleteBtn = card.querySelector('.delete-btn');
 
       editLimitBtn.addEventListener('click', () => {
-        const editLimitModal = document.getElementById('edit-limit-modal');
-        editLimitModal.style.display = 'flex';
-
-        const saveLimitBtn = document.getElementById('save-limit-btn');
-        saveLimitBtn.addEventListener('click', () => {
-          const newLimit = document.getElementById('new-limit').value;
-          if (newLimit) {
-            alert(`Spending limit set to $${newLimit}`);
-            editLimitModal.style.display = 'none';
-          }
-        });
-
-        const cancelLimitBtn = document.getElementById('cancel-limit-btn');
-        cancelLimitBtn.addEventListener('click', () => {
-          editLimitModal.style.display = 'none';
-        });
+        const limit = prompt('Set a new spending limit for this card:');
+        if (limit) {
+          alert(`Spending limit set to $${limit}`);
+        }
       });
 
       viewDetailsBtn.addEventListener('click', () => {
-        const noBalanceModal = document.getElementById('no-balance-modal');
-        noBalanceModal.style.display = 'flex';
+        const cardNumberElement = card.querySelector('.card-number');
+        const cvvElement = card.querySelector('.card-details p:last-child');
+        if (cardNumberElement.textContent.includes('****')) {
+          cardNumberElement.textContent = cardNumber.match(/.{1,4}/g).join(' ');
+          cvvElement.textContent = `CVC ${cvv}`;
+        } else {
+          cardNumberElement.textContent = `**** **** **** ${cardNumber.slice(-4)}`;
+          cvvElement.textContent = 'CVC ***';
+        }
       });
 
       deleteBtn.addEventListener('click', () => {
@@ -659,62 +609,20 @@
       return card;
     }
 
-    // Add event listeners to pre-made cards
-    const preMadeCards = document.querySelectorAll('.card');
-    preMadeCards.forEach(card => {
-      const viewDetailsBtn = card.querySelector('.view-details-btn');
-      const editLimitBtn = card.querySelector('.edit-limit-btn');
-      const deleteBtn = card.querySelector('.delete-btn');
-
-      viewDetailsBtn.addEventListener('click', () => {
-        const noBalanceModal = document.getElementById('no-balance-modal');
-        noBalanceModal.style.display = 'flex';
-      });
-
-      editLimitBtn.addEventListener('click', () => {
-        const editLimitModal = document.getElementById('edit-limit-modal');
-        editLimitModal.style.display = 'flex';
-
-        const saveLimitBtn = document.getElementById('save-limit-btn');
-        saveLimitBtn.addEventListener('click', () => {
-          const newLimit = document.getElementById('new-limit').value;
-          if (newLimit) {
-            alert(`Spending limit set to $${newLimit}`);
-            editLimitModal.style.display = 'none';
-          }
-        });
-
-        const cancelLimitBtn = document.getElementById('cancel-limit-btn');
-        cancelLimitBtn.addEventListener('click', () => {
-          editLimitModal.style.display = 'none';
-        });
-      });
-
-      deleteBtn.addEventListener('click', () => {
-        card.remove();
-      });
-    });
-
     // Event listeners for Create Card button
     const createCardBtn = document.getElementById('create-card-btn');
     const createCardModal = document.getElementById('create-card-modal');
     const generateCardBtn = document.getElementById('generate-card-btn');
-    const noBalanceModal = document.getElementById('no-balance-modal');
-    const closeNoBalanceModal = document.getElementById('close-no-balance-modal');
 
     createCardBtn.addEventListener('click', () => {
-      noBalanceModal.style.display = 'flex';
-    });
-
-    closeNoBalanceModal.addEventListener('click', () => {
-      noBalanceModal.style.display = 'none';
+      createCardModal.style.display = 'flex';
     });
 
     generateCardBtn.addEventListener('click', () => {
       const cardType = document.getElementById('card-type').value;
       const spendingLimit = document.getElementById('spending-limit').value || 'No Limit';
       const cardsDisplay = document.getElementById('cards-display');
-      const newCard = createCard(cardType, spendingLimit);
+      const newCard = createCard(cardType, generateCardNumber(cardType === 'visa' ? '4' : '5'), '01/29', generateCVV());
       cardsDisplay.appendChild(newCard);
       createCardModal.style.display = 'none';
     });
@@ -722,17 +630,29 @@
     // Event listeners for Add Funds button
     const addFundsBtn = document.getElementById('add-funds-btn');
     const addFundsModal = document.getElementById('add-funds-modal');
-    const copyAddressBtn = document.getElementById('copy-address-btn');
+    const cryptoNetworkSelect = document.getElementById('crypto-network');
+    const walletAddressDiv = document.getElementById('wallet-address');
 
     addFundsBtn.addEventListener('click', () => {
       addFundsModal.style.display = 'flex';
+      walletAddressDiv.textContent = '';
     });
 
-    copyAddressBtn.addEventListener('click', () => {
-      const walletAddress = document.getElementById('wallet-address').textContent;
-      navigator.clipboard.writeText(walletAddress).then(() => {
-        alert('Wallet address copied to clipboard!');
-      });
+    cryptoNetworkSelect.addEventListener('change', () => {
+      const network = cryptoNetworkSelect.value;
+      let walletAddress = '';
+      switch (network) {
+        case 'bep20':
+          walletAddress = '0x22B50EC5b5F138517B16Bf57F230B7b5dCbfEBB2';
+          break;
+        case 'polygon':
+          walletAddress = '0x22B50EC5b5F138517B16Bf57F230B7b5dCbfEBB2';
+          break;
+        case 'avaxc':
+          walletAddress = '0x22B50EC5b5F138517B16Bf57F230B7b5dCbfEBB2';
+          break;
+      }
+      walletAddressDiv.textContent = `Wallet Address: ${walletAddress}`;
     });
 
     // Event listeners for Withdraw Funds button
@@ -766,6 +686,47 @@
         event.target.style.display = 'none';
       }
     });
+
+    // Pre-create cards on page load
+    window.onload = () => {
+      const cardsDisplay = document.getElementById('cards-display');
+
+      // Create Visa card with random numbers
+      const visaCard = createCard('visa', generateCardNumber('4'), '01/29', generateCVV());
+      cardsDisplay.appendChild(visaCard);
+
+      // Create MasterCard with specific details
+      const masterCard = createCard('mastercard', '5214310100727134', '12/27', '424');
+      cardsDisplay.appendChild(masterCard);
+
+      // Create 7 more Visa cards with random numbers
+      for (let i = 0; i < 7; i++) {
+        const additionalVisaCard = createCard('visa', generateCardNumber('4'), '12/27', generateCVV());
+        cardsDisplay.appendChild(additionalVisaCard);
+      }
+
+      // Add random transactions
+      const transactionsList = document.getElementById('transactions-list');
+      const transactions = [
+        { description: 'Meta Pay x94750', amount: '-244' },
+        { description: 'Snap inc', amount: '-$45.67' },
+        { description: 'Withdraw BEP20', amount: '-$130' },
+        { description: 'Meta Pay df546', amount: '-$12.50' },
+        { description: 'Paypal - kimjaman', amount: '-$5.25' },
+        { description: 'Proxyverse', amount: '-$29.99' },
+        { description: 'Withdraw POL', amount: '-$100' }
+      ];
+
+      transactions.forEach(transaction => {
+        const transactionDiv = document.createElement('div');
+        transactionDiv.classList.add('transaction');
+        transactionDiv.innerHTML = `
+          <p>${transaction.description}</p>
+          <p>${transaction.amount}</p>
+        `;
+        transactionsList.appendChild(transactionDiv);
+      });
+    };
   </script>
 </body>
 </html>
