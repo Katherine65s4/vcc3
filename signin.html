@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - InfinitVCC</title>
+  <style>
+    /* Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column; /* Ensure vertical stacking of header and content */
+      margin-top: 0;
+    }
+
+    /* Header */
+    header {
+      background-color: #E63946; /* Reddish color */
+      width: 100%;
+      padding: 10px 0;
+      text-align: center;
+      color: white;
+      font-size: 22px;
+      font-weight: bold;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10;
+    }
+
+    /* Main Container */
+    .container {
+      background: white;
+      width: 100%;
+      max-width: 420px;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-top: 70px; /* Ensure the container is below the header */
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .google-signin-button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4285F4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .google-signin-button:hover {
+      background-color: #357AE8;
+    }
+
+    .register-button {
+      width: 100%;
+      padding: 12px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 15px;
+    }
+
+    .register-button:hover {
+      background-color: #2980b9;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Header Section -->
+  <header>
+    InfinitVCC
+  </header>
+
+  <!-- Login Form Section -->
+  <div class="container">
+    <h2>Login</h2>
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <!-- Google Sign-In Button -->
+    <button class="google-signin-button" id="google-signin-button">Login with Google</button>
+
+    <!-- Register Button -->
+    <a href="register.html">
+      <button class="register-button">Don't have an account? Register</button>
+    </a>
+  </div>
+
+  <!-- Firebase SDK (Modular version) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcKue5UwxmpR2hVEoALaBhGIPitaim7lk",
+      authDomain: "taretaer-e0a45.firebaseapp.com",
+      projectId: "taretaer-e0a45",
+      storageBucket: "taretaer-e0a45.firebasestorage.app",
+      messagingSenderId: "45975842004",
+      appId: "1:45975842004:web:30766389b42f2511a8df41",
+      measurementId: "G-W3SSVZM3HR"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Google Auth Provider
+    const googleProvider = new GoogleAuthProvider();
+
+    // Get the form and success message elements
+    const form = document.getElementById('login-form');
+    const googleSignInButton = document.getElementById('google-signin-button');
+
+    // Login with email and password
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Successful login
+          const user = userCredential.user;
+          // Redirect to dashboard after successful login
+          window.location.href = 'dashboard.html';
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          alert(`Error: ${errorMessage}`);
+        });
+    });
+
+    // Login with Google
+    googleSignInButton.addEventListener('click', () => {
+      signInWithPopup(auth, googleProvider)
+        .then((result) => {
+          const user = result.user;
+          // Redirect to dashboard after successful login
+          window.location.href = 'dashboard.html';
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          alert(`Error: ${errorMessage}`);
+        });
+    });
+  </script>
+
+</body>
+</html>
